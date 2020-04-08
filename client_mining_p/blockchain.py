@@ -69,11 +69,11 @@ class Blockchain(object):
         # We must make sure that the Dictionary is Ordered,
         # or we'll have inconsistent hashes
 
-        # TODO: Create the block_string
+        # Create the block_string
         string_object = json.dumps(block, sort_keys=True)
         block_string = string_object.encode()
 
-        # TODO: Hash this string using sha256
+        # Hash this string using sha256
         raw_hash = hashlib.sha256(block_string)
         hex_hash = raw_hash.hexdigest()
 
@@ -83,7 +83,7 @@ class Blockchain(object):
         # hash to a string of hexadecimal characters, which is
         # easier to work with and understand
 
-        # TODO: Return the hashed block string in hexadecimal format
+        # Return the hashed block string in hexadecimal format
         return hex_hash
 
     @property
@@ -104,6 +104,7 @@ class Blockchain(object):
         """
         guess = f"{block_string}{proof}".encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
+        print(guess_hash)
         return guess_hash[:6] == "000000"
 
 
@@ -117,10 +118,22 @@ node_identifier = str(uuid4()).replace('-', '')
 blockchain = Blockchain()
 
 
-@app.route('/mine', methods=['GET'])
+@app.route('/mine', methods=['POST'])
 def mine():
-    # Run the proof of work algorithm to get the next proof
-    proof = blockchain.proof_of_work()
+    # Check the POSTed data
+    data = request.get_json()
+    if not ('proof' in data and 'id' in data):
+        response = {'message': "Missing proof or user ID"}
+        return jsonify(response), 400
+
+    proof = data['proof']
+    user_id = data['id']
+
+    # Check the proof
+    block_string = json.dumps(blockchain.last_block, sort_keys=True)
+    if not blockchain.valid_proof(block_string, proof):
+        response = {'message': f"Invalid proof: {proof}"}
+        return jsonify(response), 400
 
     # Forge the new Block by adding it to the chain with the proof
     previous_hash = blockchain.hash(blockchain.last_block)
