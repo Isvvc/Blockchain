@@ -90,20 +90,6 @@ class Blockchain(object):
     def last_block(self):
         return self.chain[-1]
 
-    def proof_of_work(self):
-        """
-        Simple Proof of Work Algorithm
-        Stringify the block and look for a proof.
-        Loop through possibilities, checking each one against `valid_proof`
-        in an effort to find a number that is a valid proof
-        :return: A valid proof for the provided block
-        """
-        block_string = json.dumps(self.last_block, sort_keys=True)
-        proof = 0
-        while not self.valid_proof(block_string, proof):
-            proof += 1
-        return proof
-
     @staticmethod
     def valid_proof(block_string, proof):
         """
@@ -118,7 +104,7 @@ class Blockchain(object):
         """
         guess = f"{block_string}{proof}".encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
-        return guess_hash[:4] == "0000"
+        return guess_hash[:6] == "000000"
 
 
 # Instantiate our Node
@@ -158,6 +144,11 @@ def full_chain():
         'chain': blockchain.chain
     }
     return jsonify(response), 200
+
+
+@app.route('/last_block', methods=['GET'])
+def last_block():
+    return jsonify(blockchain.last_block, 200)
 
 
 # Run the program on port 5000
