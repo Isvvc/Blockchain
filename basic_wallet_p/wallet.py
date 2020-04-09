@@ -53,12 +53,25 @@ if __name__ == '__main__':
                 print("h, help: Show this help menu")
                 print("name: Show the current username")
                 print("name [new_name]: Set a new username")
+                print("t, transactions: List all transactions for this user")
+                print("bal, balance: Print the current user's balance")
                 print("q: Quit the program")
             elif cmd == "name":
                 print(f"Current user: {username}")
             elif cmd in ["transactions", "t"]:
                 transactions = get_transactions()
                 print(json.dumps(transactions, indent=2))
+            elif cmd in ["balance", "bal"]:
+                transactions = get_transactions()
+                balance = 0
+                for transaction in transactions:
+                    if transaction["recipient"] == username:
+                        # The user received coins
+                        balance += transaction["amount"]
+                    else:
+                        # The user sent coins
+                        balance -= transaction["amount"]
+                print(f"Balance: {balance}")
         elif len(inputs) == 2:
             if inputs[0] == "name":
                 set_name(inputs[1])
