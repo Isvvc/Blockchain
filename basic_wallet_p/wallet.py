@@ -7,6 +7,29 @@ if __name__ == '__main__':
 
     username = None
 
+    def set_name(name):
+        global username
+        username = name
+        f = open("my_id.txt", "w")
+        f.write(name)
+        f.close()
+
+    def get_transactions():
+        r = requests.get(url="http://localhost:5000/chain")
+        try:
+            data = r.json()
+        except ValueError:
+            print(f"Error: non-json respsonse: {r}")
+            return
+
+        all_blocks = data["chain"]
+        transactions = []
+        for block in all_blocks:
+            for transaction in block["transactions"]:
+                if transaction["sender"] == username or transaction["recipient"] == username:
+                    transactions.append(block)
+        return transactions
+
     if os.path.isfile("my_id.txt"):
         # Load the User ID file
         f = open("my_id.txt", "r")
@@ -14,16 +37,9 @@ if __name__ == '__main__':
         f.close()
     else:
         name = input("Please enter your name: ")
-        f = open("my_id.txt", "w")
-        f.write(name)
-        f.close()
+        set_name(name)
 
-    def set_name(name):
-        global username
-        username = name
-        f = open("my_id.txt", "w")
-        f.write(name)
-        f.close()
+    print(f"Welcome, {username}")
 
     while True:
         cmd = input("-> ")
@@ -40,6 +56,9 @@ if __name__ == '__main__':
                 print("q: Quit the program")
             elif cmd == "name":
                 print(f"Current user: {username}")
+            elif cmd in ["transactions", "t"]:
+                transactions = get_transactions()
+                print(json.dumps(transactions, indent=2))
         elif len(inputs) == 2:
             if inputs[0] == "name":
                 set_name(inputs[1])
