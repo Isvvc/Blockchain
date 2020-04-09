@@ -27,7 +27,7 @@ if __name__ == '__main__':
         for block in all_blocks:
             for transaction in block["transactions"]:
                 if transaction["sender"] == username or transaction["recipient"] == username:
-                    transactions.append(block)
+                    transactions.append(transaction)
         return transactions
 
     if os.path.isfile("my_id.txt"):
